@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install tinycolor2)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
