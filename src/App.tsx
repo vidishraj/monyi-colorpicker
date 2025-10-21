@@ -13,10 +13,7 @@ function App() {
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Generate random rainbow colors on mount
-  useEffect(() => {
-    generateRandomBackground()
-  }, [])
+  // Don't generate background on mount - only when eyedropper is activated
 
   const generateRandomBackground = () => {
     const colors: string[] = []
