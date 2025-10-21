@@ -2,6 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import tinycolor from 'tinycolor2'
 import './App.css'
 
+// Helper function to convert RGB to HEX
+const rgbToHex = (r: number, g: number, b: number): string => {
+  return '#' + [r, g, b].map(x => {
+    const hex = Math.round(x).toString(16)
+    return hex.length === 1 ? '0' + hex : hex
+  }).join('').toUpperCase()
+}
+
 function App() {
   const [hue, setHue] = useState(0)
   const [saturation, setSaturation] = useState(100)
@@ -113,16 +121,96 @@ function App() {
     }, 20)
   }, [])
 
-  const handleHexChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const color = tinycolor(e.target.value)
-    if (color.isValid()) {
-      const hsl = color.toHsl()
-      setHue(hsl.h)
-      setSaturation(hsl.s * 100)  // Convert from 0-1 to 0-100
-      setLightness(hsl.l * 100)   // Convert from 0-1 to 0-100
-      setDisplayHue(hsl.h)
+  const [hexError, setHexError] = useState(false)
+  const [rError, setRError] = useState(false)
+  const [gError, setGError] = useState(false)
+  const [bError, setBError] = useState(false)
+  const [hexInputValue, setHexInputValue] = useState(hex)
+  const [rInputValue, setRInputValue] = useState(Math.round(rgb.r).toString())
+  const [gInputValue, setGInputValue] = useState(Math.round(rgb.g).toString())
+  const [bInputValue, setBInputValue] = useState(Math.round(rgb.b).toString())
+
+  const handleHexInput = (value: string) => {
+    // Update local state immediately for responsive UI
+    setHexInputValue(value)
+
+    // Allow free editing - convert to uppercase
+    let hexValue = value.toUpperCase()
+
+    // Auto-add # if not present and has content
+    if (hexValue.length > 0 && !hexValue.startsWith('#')) {
+      hexValue = '#' + hexValue
     }
-  }, [])
+
+    // Check if it's valid (must be exactly 7 chars with format #XXXXXX)
+    const isValid = hexValue.length === 7 && /^#[0-9A-F]{6}$/.test(hexValue)
+
+    if (isValid) {
+      setHexError(false)
+      const color = tinycolor(hexValue)
+      if (color.isValid()) {
+        const hsl = color.toHsl()
+        setHue(hsl.h || 0)
+        setSaturation(hsl.s * 100)
+        setLightness(hsl.l * 100)
+        setDisplayHue(hsl.h || 0)
+      }
+    } else if (hexValue.length > 0 && hexValue !== '#') {
+      // Show error if user has typed something but it's not valid
+      setHexError(true)
+    } else {
+      setHexError(false)
+    }
+  }
+
+  const handleRgbInput = (channel: 'r' | 'g' | 'b', value: string) => {
+    // Update local state immediately
+    if (channel === 'r') {
+      setRInputValue(value)
+    } else if (channel === 'g') {
+      setGInputValue(value)
+    } else {
+      setBInputValue(value)
+    }
+
+    // Allow free editing
+    const num = value === '' ? 0 : parseInt(value, 10)
+
+    // Check if valid (0-255)
+    const isValid = !isNaN(num) && num >= 0 && num <= 255
+
+    if (channel === 'r') {
+      setRError(!isValid && value !== '')
+    } else if (channel === 'g') {
+      setGError(!isValid && value !== '')
+    } else {
+      setBError(!isValid && value !== '')
+    }
+
+    // Only update color if valid
+    if (isValid && value !== '') {
+      const r = channel === 'r' ? num : Math.round(rgb.r)
+      const g = channel === 'g' ? num : Math.round(rgb.g)
+      const b = channel === 'b' ? num : Math.round(rgb.b)
+
+      const hexValue = rgbToHex(r, g, b)
+      const color = tinycolor(hexValue)
+      const hsl = color.toHsl()
+
+      setHue(hsl.h || 0)
+      setSaturation(hsl.s * 100)
+      setLightness(hsl.l * 100)
+      setDisplayHue(hsl.h || 0)
+    }
+  }
+
+  // Sync input values when color changes from other sources
+  useEffect(() => {
+    setHexInputValue(hex)
+    setRInputValue(Math.round(rgb.r).toString())
+    setGInputValue(Math.round(rgb.g).toString())
+    setBInputValue(Math.round(rgb.b).toString())
+  }, [hex, rgb.r, rgb.g, rgb.b])
 
   const pickColorFromBackground = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = backgroundCanvasRef.current
@@ -287,22 +375,42 @@ function App() {
               <label>HEX</label>
               <input
                 type="text"
-                value={hex}
-                onChange={handleHexChange}
+                value={hexInputValue}
+                onChange={(e) => handleHexInput(e.target.value)}
                 maxLength={7}
+                placeholder="#000000"
+                className={hexError ? 'error' : ''}
               />
             </div>
             <div className="value-group">
               <label>R</label>
-              <input type="text" value={Math.round(rgb.r)} readOnly />
+              <input
+                type="text"
+                inputMode="numeric"
+                value={rInputValue}
+                onChange={(e) => handleRgbInput('r', e.target.value)}
+                className={rError ? 'error' : ''}
+              />
             </div>
             <div className="value-group">
               <label>G</label>
-              <input type="text" value={Math.round(rgb.g)} readOnly />
+              <input
+                type="text"
+                inputMode="numeric"
+                value={gInputValue}
+                onChange={(e) => handleRgbInput('g', e.target.value)}
+                className={gError ? 'error' : ''}
+              />
             </div>
             <div className="value-group">
               <label>B</label>
-              <input type="text" value={Math.round(rgb.b)} readOnly />
+              <input
+                type="text"
+                inputMode="numeric"
+                value={bInputValue}
+                onChange={(e) => handleRgbInput('b', e.target.value)}
+                className={bError ? 'error' : ''}
+              />
             </div>
           </div>
         </div>

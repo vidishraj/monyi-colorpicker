@@ -325,7 +325,7 @@ body {
 
 .value-group input {
   padding: clamp(5px, 1.2vw, 7px);
-  border: 1px solid #e5e5e5;
+  border: 2px solid #e5e5e5;
   border-radius: clamp(4px, 0.8vw, 5px);
   font-size: clamp(11px, 2vw, 13px);
   font-weight: 500;
@@ -334,16 +334,43 @@ body {
   color: #333;
   font-family: 'Monaco', 'Menlo', monospace;
   min-height: clamp(28px, 6vw, 34px);
-  -webkit-user-select: none;
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.2s ease;
+}
+
+.value-group input:hover {
+  border-color: #d0d0d0;
+  background: #ffffff;
 }
 
 .value-group input:focus {
   outline: none;
   border-color: #7c3aed;
   background: white;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.value-group input.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.value-group input.error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Remove number input spinner arrows for cleaner look */
+.value-group input[type="number"]::-webkit-outer-spin-button,
+.value-group input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.value-group input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 @media (max-width: 360px) {
