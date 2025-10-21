@@ -85,8 +85,9 @@ function App() {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    const s = Math.max(0, Math.min(100, (x / canvas.width) * 100))
-    const l = Math.max(0, Math.min(100, 100 - (y / canvas.height) * 100))
+    // Use the displayed size (rect) not the canvas size for accurate positioning
+    const s = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    const l = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100))
 
     setSaturation(s)
     setLightness(l)
